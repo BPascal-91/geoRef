@@ -1,0 +1,16 @@
+http://xcglobe.com/ways
+
+*** Autres ressources (recherche "country border geojson")
+	Good ! - https://ec.europa.eu/eurostat/fr/web/gisco/geodata/reference-data/administrative-units-statistical-units/countries
+		1:60 Million - Monde en très-basse résolution
+			--> CNTR_RG_60M_2020_4326.geojson - Frontières administratives des Pays
+			CNTR_BN_60M_2020_4326_INLAND.geojson - Intersection des frontièeres administratives des Pays
+			CNTR_BN_60M_2020_4326_COASTL.geojson - Tracé des côtes océaniques
+			CNTR_LB_2020_4326.geojson - Point pour positionnement des labels des Pays
+		1:1 Million - Monde en très haute résolution
+			--> 
+	Pays du monde par sélection géographique (mauvaise précision, même en "High resolution (10 metre, largest file)") - https://geojson-maps.ash.ms/
+	Pays d'Europe (mauvaise précision) - https://data.opendatasoft.com/explore/dataset/european-union-countries@public/export/?flg=fr
+	Pays du monde (23MB / mauvaise précision) - https://github.com/datasets/geo-countries/blob/master/data/countries.geojson
+	Pays du monde (23MB / mauvaise précision) - https://datahub.io/core/geo-countries
+	

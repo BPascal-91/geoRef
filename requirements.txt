@@ -1,0 +1,5 @@
+###
+### Librayries
+###    Syntaxe4load --> pip install -r requirements.txt
+###
+#aixmPaser							; necessary to parse sources files
