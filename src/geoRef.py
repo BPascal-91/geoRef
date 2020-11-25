@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-
-
 try:
     import bpaTools
 except ImportError:
