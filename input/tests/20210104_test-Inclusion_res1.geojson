@@ -1,0 +1,9 @@
+{"type":"FeatureCollection","features":[
+	{"type":"Feature","properties":{"name":"","description":""},"geometry":{"type":"Polygon","coordinates":[[
+		[2.220612,48.380882],[2.220612,48.654686],[2.861938,48.654686],[2.861938,48.380882],[2.220612,48.380882],[2.364807,48.545705],[2.562561,48.463816],[2.569427,48.602041],[2.364807,48.545705]
+	]
+	]}}
+	],"webtools":{"translatable":["name","description"],"lang":"en"}}
+	
+	
+	
