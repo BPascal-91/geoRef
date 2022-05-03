@@ -48,7 +48,7 @@ class GeoAreaTools:
         #   cliquer Execute
         #   cliquer Download
         #   Enregistrer le fichier sous format type 'YYYYMMDD_LPO_All_Parcs-et-ZSMs.geojson'
-        sPath:str="D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/BPa/ZSM/"
+        sPath:str="D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/ZSMs/"
         sFileSrc:str="20220415_LPO_All_Parcs-et-ZSMs.geojson"
         sYersFilter=["2021","2022"]
         oLPOdata:dict = bpaTools.readJsonFile(sPath + sFileSrc)
@@ -71,10 +71,12 @@ class GeoAreaTools:
             bZSM = bZSM or sName=="Aigle royal"
             bZSM = bZSM or sName[:11]=="Tétras lyre"                    #Tétras lyre - hiver
             bZSM = bZSM and ((3 in aPractices) or (7 in aPractices))
-            if bZSM and sUpdtDT[:4] in sYersFilter:
+            #if bZSM and sUpdtDT[:4] in sYersFilter:
+            #    aNewFeatActZsm.append(aFeat)
+            #elif bZSM:
+            #    aNewFeatNotActZsm.append(aFeat)
+            if bZSM:
                 aNewFeatActZsm.append(aFeat)
-            elif bZSM:
-                aNewFeatNotActZsm.append(aFeat)
 
             if not bZSM:
                 bParc:bool = False
@@ -93,44 +95,88 @@ class GeoAreaTools:
             oNewGeojson.update({"features":aNewFeatActZsm})
             sFileDst = sFileSrc.replace("All_Parcs-et-ZSMs","Poaff-Zsm-Active")
             bpaTools.writeJsonFile(sPath + sFileDst, oNewGeojson)
+            self.geoJson2Openair1(sPath, sFileDst)
 
         if len(aNewFeatNotActZsm)>0:
             oNewGeojson:dict  = {"type":"FeatureCollection"}
             oNewGeojson.update({"features":aNewFeatNotActZsm})
             sFileDst = sFileSrc.replace("All_Parcs-et-ZSMs","Poaff-Zsm-NotActive")
             bpaTools.writeJsonFile(sPath + sFileDst, oNewGeojson)
+            self.geoJson2Openair1(sPath, sFileDst)
 
         if len(aNewFeatParc)>0:
             oNewGeojson:dict  = {"type":"FeatureCollection"}
             oNewGeojson.update({"features":aNewFeatParc})
             sFileDst = sFileSrc.replace("All_Parcs-et-ZSMs","Poaff-Parc")
             bpaTools.writeJsonFile(sPath + sFileDst, oNewGeojson)
+            self.geoJson2Openair1(sPath, sFileDst)
 
         if len(aNewFeatOthers)>0:
             oNewGeojson:dict  = {"type":"FeatureCollection"}
             oNewGeojson.update({"features":aNewFeatOthers})
             sFileDst = sFileSrc.replace("All_Parcs-et-ZSMs","Poaff-Others")
             bpaTools.writeJsonFile(sPath + sFileDst, oNewGeojson)
-
-        #self.geoJson2Openair1()
+            self.geoJson2Openair1(sPath, sFileDst)
         return
 
     def geoJson2Openair1(self, sPath:str="", sFile:str="") -> None:
-        def coord2Openair() -> None:
-            for oPoint in aKmlPolygon:
-                oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", "")
+        def coord2Openair(aPol:list) -> None:
+            for oPoint in aPol:
+                oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", "")    #For native coords with decimals values
+                #oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", "", digit=0)    #For Control with 'Friend Air Tools' - https://mids.be/fat/
                 sPoint = "DP " + " ".join(oDmsPoint)
                 aPoints.append(sPoint)
+
+        def makeOpenairHead(aFeat:dict) -> None:
+            aPoints.append("AC GP")
+            sID:str = "LF"
+            sName:str = ""
+            if "ID_MNHN" in aFeat["properties"]:
+                sID += aFeat["properties"]["ID_MNHN"] + "-" + str(lSubFeatNumber)
+                sName += aFeat["properties"].get("NOM_SITE","") + " " + sID
+            elif "name" in aFeat["properties"]:
+                sID += aFeat["properties"].get("name","") + "-" + str(lSubFeatNumber)
+                sName += aFeat["properties"].get("name","") + " " + sID
+            else:
+                sID += "Autoload-" + str(lFeatNumber) + "." + str(lSubFeatNumber)
+                sName += "Autoload " + sID
+            aPoints.append("AN PROTECT " + aFeat["properties"].get("NOM_SITE","") + " " + sID + " (???m/sol) (FAUNA)")
+            aPoints.append("*AUID GUId=! UId=! Id=" + sID)
+            if "URL_FICHE" in aFeat["properties"]:
+                aPoints.append("*ADescr (c) Pascal Bazile 04/2022 - " + aFeat["properties"].get("OPERATEUR","") + " - " + aFeat["properties"].get("GEST_SITE","") + " - " + aFeat["properties"].get("ID_MNHN","") + " - " + aFeat["properties"]["URL_FICHE"])
+                aPoints.append("*AActiv [H24] Survol interdit à moins de ??? mètres sol - (Décret)")
+                aPoints.append('*ATimes {"1": ["UTC(01/01->31/12)", "ANY(00:00->23:59)"]}')
+            else:
+                aPoints.append("*Properties: " + str(aFeat["properties"]))
+            aPoints.append("AH 69FT")
+            aPoints.append("AL SFC")
 
         aKmlPolygon:list = None
         aPoints:list = []
         if sFile:
             oKml = bpaTools.readJsonFile(sPath + sFile)
+            lFeatNumber:int = 0
             for aFeat in oKml["features"]:
-                aPoints.append('"' + str(aFeat["properties"].items()) + '"')
-                aKmlPolygon = aFeat["geometry"]["coordinates"][0]
-                coord2Openair()
-                aPoints.append("")
+                lFeatNumber += 1
+                lSubFeatNumber:int = 0
+                #makeOpenairHead()
+                #aKmlPolygon = aFeat["geometry"]["coordinates"][0]
+                #if not (isinstance(aKmlPolygon[0][0], float)):
+                #    aKmlPolygon = aKmlPolygon[0]
+                #coord2Openair(aKmlPolygon)
+                #aPoints.append("")
+                aKmlPolygon = aFeat["geometry"]["coordinates"]
+                if (isinstance(aKmlPolygon[0][0][0], float)):
+                    makeOpenairHead(aFeat)
+                    coord2Openair(aKmlPolygon[0])
+                    aPoints.append("")
+                elif(isinstance(aKmlPolygon[0][0][0], list)):
+                    for aSubFeat in aKmlPolygon:
+                        lSubFeatNumber += 1
+                        makeOpenairHead(aFeat)
+                        coord2Openair(aSubFeat[0])
+                        aPoints.append("")
+
         else:
             #use this bloc with convert kml content --> <coordinates>6.83116684293515,45.1887962663991 6.83122924345731,45.18753 ...
             aKmlPolygon = [[6.83116684293515,45.1887962663991],[6.83122924345731,45.1875332872193],[6.83131352292729,45.1869840167388],[6.83071009330213,45.1864871164329],[6.83053717594824,45.185745380592],[6.82986247584278,45.1853947065231],[6.82922047700472,45.1849278799351],[6.82886365843867,45.1838761316866],[6.82823613193378,45.1830008963238],[6.82738597032615,45.1824890057639],[6.82666879567534,45.1821110152744],[6.82591106478646,45.1817344113565],[6.82539673823843,45.1813494568795],[6.82497534886682,45.1811338530004],[6.82403054464708,45.1809937028924],[6.82167915632423,45.1808972808342],[6.82089792813593,45.1811401743407],[6.82015128427647,45.1807527705459],[6.81934193996408,45.1808092377071],[6.81751060505921,45.1807856490084],[6.81637477118819,45.1808245096688],[6.81555561350889,45.1807375032247],[6.81469981545173,45.1807092563641],[6.81384009663329,45.1806236243942],[6.81305955083956,45.1805065236058],[6.81195056611447,45.1803431277669],[6.81155863058669,45.1805578128995],[6.81217358554118,45.1812269518724],[6.81274406825428,45.1818400953196],[6.81339373640988,45.1824217734848],[6.81413728826758,45.1833971857846],[6.81410678564142,45.1845253672372],[6.81363626247196,45.1853753849769],[6.8137723066816,45.1861759122728],[6.81401106724276,45.187289248416],[6.81481792630372,45.1887812957156],[6.81673844619317,45.1902065883934],[6.81637589671788,45.1908516302397],[6.8163686858995,45.191340735987],[6.81638895016227,45.1922314920441],[6.81658461008764,45.1927136593541],[6.81731559390163,45.1932925405767],[6.81829986044738,45.1940065335207],[6.82060093655784,45.1955381375083],[6.8210990556066,45.1968726393021],[6.82179615753086,45.1981428127009],[6.8220253009274,45.1991126883914],[6.82225445228593,45.2000825638198],[6.82243516775035,45.2009390718592],[6.82379987264115,45.2012661577135],[6.82493808449342,45.2012559105484],[6.82619606839583,45.2012127889121],[6.82768374997701,45.2009604784701],[6.82884678081721,45.2007192863933],[6.82985733243216,45.2006270982441],[6.83084109295987,45.2007371176208],[6.83170114758968,45.2008226190614],[6.83245836340438,45.2005953211373],[6.83266751462437,45.1994953815465],[6.83264698799016,45.1986046270297],[6.83245116869721,45.1981224872431],[6.83217616892014,45.197671823096],[6.83211391273564,45.1973576368303],[6.83302435073977,45.1975851799175],[6.83277218586644,45.1968749221773],[6.83220330038046,45.1962905680771],[6.8320094637158,45.1958371168124],[6.83201456742522,45.1953193205273],[6.83135470366751,45.1945943037634],[6.83121247624648,45.1937077292448],[6.83125225068899,45.1931024730144],[6.83093985492477,45.1921067144735],[6.8308709061197,45.1911025978779],[6.83094534475593,45.1904098820422],[6.83127503175966,45.1898809421748],[6.83148102830672,45.1893274919413],[6.83116684293515,45.1887962663991]]
@@ -255,6 +301,8 @@ if __name__ == '__main__':
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/Src_Python/git/poaff/input/Parcs/Pyrennees/geoLoc/", "_PNP-CoeurDuParc_hr.geojson")
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/Src_Python/git/poaff/input/Parcs/Pyrennees/geoLoc/", "_PNP_SurvolVolVoile_hr.geojson")
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/Src_Python/git/poaff/input/Parcs/Pyrennees/geoLoc/", "_PNP_SurvolVolLibre_hr.geojson")
-    #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/BPa/ZSM/makeOpenair/", "20220409_ZSM_ValdIsere-GorgesDaille.geojson")
+    #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/ZSMs/makeOpenair/", "20220409_ZSM_ValdIsere-GorgesDaille.geojson")
     #o.geoJson2Openair2()
-    o.geoJsonLPO2Openair()
+    #o.geoJsonLPO2Openair()
+    #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/Parcs/___ZSMs/", "20220423_ZSM-Divers_hr.geojson")
+    o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src\GitHub/poaff/input/Parcs/", "20220501_BPa-ZSMs-A-Integrer.geojson")
