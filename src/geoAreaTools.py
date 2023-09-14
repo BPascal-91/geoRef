@@ -122,8 +122,8 @@ class GeoAreaTools:
     def geoJson2Openair1(self, sPath:str="", sFile:str="") -> None:
         def coord2Openair(aPol:list) -> None:
             for oPoint in aPol:
-                oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", "")    #For native coords with decimals values
-                #oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", "", digit=0)    #For Control with 'Friend Air Tools' - https://mids.be/fat/
+                #oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", " ")    #For native coords with decimals values
+                oDmsPoint = bpaTools.GeoCoordinates.geoStr2coords(oPoint[1], oPoint[0], "dms", ":", " ", digit=0)    #For Control with 'Friend Air Tools' - https://mids.be/fat/
                 sPoint = "DP " + " ".join(oDmsPoint)
                 aPoints.append(sPoint)
 
@@ -143,7 +143,7 @@ class GeoAreaTools:
             aPoints.append("AN PROTECT " + aFeat["properties"].get("NOM_SITE","") + " " + sID + " (???m/sol) (FAUNA)")
             aPoints.append("*AUID GUId=! UId=! Id=" + sID)
             if "URL_FICHE" in aFeat["properties"]:
-                aPoints.append("*ADescr (c) Pascal Bazile 04/2022 - " + aFeat["properties"].get("OPERATEUR","") + " - " + aFeat["properties"].get("GEST_SITE","") + " - " + aFeat["properties"].get("ID_MNHN","") + " - " + aFeat["properties"]["URL_FICHE"])
+                aPoints.append("*ADescr (c) Pascal Bazile 03/2023 - " + aFeat["properties"].get("OPERATEUR","") + " - " + aFeat["properties"].get("GEST_SITE","") + " - " + aFeat["properties"].get("ID_MNHN","") + " - " + aFeat["properties"]["URL_FICHE"])
                 aPoints.append("*AActiv [H24] Survol interdit à moins de ??? mètres sol - (Décret)")
                 aPoints.append('*ATimes {"1": ["UTC(01/01->31/12)", "ANY(00:00->23:59)"]}')
             else:
@@ -305,4 +305,7 @@ if __name__ == '__main__':
     #o.geoJson2Openair2()
     #o.geoJsonLPO2Openair()
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/Parcs/___ZSMs/", "20220423_ZSM-Divers_hr.geojson")
-    o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src\GitHub/poaff/input/Parcs/", "20220501_BPa-ZSMs-A-Integrer.geojson")
+    #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src\GitHub/poaff/input/Parcs/", "20220501_BPa-ZSMs-A-Integrer.geojson")
+    #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src\GitHub/poaff/input/Parcs/Biotopes-FR3800749/", "20230330_ArreteProtectionBiotope_hr.geojson")
+    #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/FFVL/PWC-FrenchAlps/20230417_PWC-FrenchAlps-1/", "20230419_Parc-Carlaveyron_new.geojson")
+    o.geoJson2Openair1("D:\_Users_\BPascal\_4_Src\GitHub\poaff\input\INNPM/", "20220421_pn_Métropole_tmp.geojson")
