@@ -59,8 +59,6 @@ class GeoBiodivSports:
             bZSM = bZSM or ("Zone de protection renforcée".lower() in sName.lower())
             bZSM = bZSM or ("Zone de Recherche".lower() in sName.lower())
 
-            #if bZSM:
-            #    aNewFeatActZsm.append(aFeat)
             if bValid and bZSM and sUpdtDT[:4] in sYersFilter:
                 aNewFeatActZsm.append(aFeat)
             elif bValid and bZSM:
@@ -73,15 +71,15 @@ class GeoBiodivSports:
                 bParc = bParc or sStruct[:3]=="RNF"                                                 #Réserve Naturelle Nationale
                 bParc = bParc or sStruct[:6]=="Asters"                                              #Réserve Naturelle Nationale
                 bParc = bParc or ("Parc National".lower() in sStruct.lower())                       #Parc National
+                bParc = bParc or ("Pyrénées-Orientales".lower() in sStruct.lower())                 #Autres Parcs
                 bParc = bParc or ("Conservatoire d'espaces naturels".lower() in sStruct.lower())    #Réserve Naturelle
                 bParc = bParc or ("Réserve Naturelle ".lower() in sName.lower())                    #Réserve Naturelle
                 bParc = bParc or ("Réserve de chasse".lower() in sName.lower())                     #Réserve de chasse
 
-
                 if bValid and bParc:
                     aNewFeatParc.append(aFeat)
-                #else:
-                #    print(sStruct)
+                else:
+                    print(sStruct)
 
             if (not bParc) and (not bZSM):
                 aNewFeatOthers.append(aFeat)
@@ -184,17 +182,40 @@ class GeoBiodivSports:
             ###     'url': 'https://biodiv-sports.fr/api/v2/sensitivearea/1506/?format=geojson'}
 
             sNameTmp:str = aFeat["properties"].get("name","")
+            sWarning:str = ""
             lElevation:int = aFeat["properties"].get("elevation",None)
-            if "Mercantour" in sNameTmp:
-                0==1
+            #if "Mercantour" in sNameTmp:
+            #    0==1
             if (lElevation == 0) or (lElevation is None):
-                if "Vautour fauve" in sNameTmp:                 lElevation = 150
+                if   "Vautour fauve" in sNameTmp:               lElevation = 150
+                elif "Aigle royal" in sNameTmp:                 lElevation = 150
+                elif "Lagopède alpin" in sNameTmp:              lElevation = 150
+                elif "Gypaete barbu" in sNameTmp:               lElevation = 300
+                elif "Vautour percnoptère" in sNameTmp:         lElevation = 300
+                elif "d'Ossau" in sNameTmp:                     lElevation = 500
                 elif "Bout du Lac d'Annecy" in sNameTmp:        lElevation = 200
+                elif "Habert de la Dame" in sNameTmp:           lElevation = 300
+                elif "Massif des Voirons" in sNameTmp:          lElevation = 300
+                elif "Massif duVuache" in sNameTmp:             lElevation = 300
+                elif "Massif du Vuache" in sNameTmp:            lElevation = 300
                 elif "Mercantour" in sNameTmp:                  lElevation = 1000
                 elif "Haute-Chaîne du Jura" in sNameTmp:        lElevation = 150
                 elif "Sixt-Fer-à-Cheval-Passy" in sNameTmp:     lElevation = 300
                 elif "Aiguilles Rouges" in sNameTmp:            lElevation = 300
-                else:                                           lElevation = 300
+                elif "Quié de Lujat" in sNameTmp:               lElevation = 500
+                elif "Roc de Sédour" in sNameTmp:               lElevation = 200
+                elif "falaises de Sourroque" in sNameTmp:       lElevation = 200
+                elif "faune sauvage de Casteil" in sNameTmp:    lElevation = 300
+                elif "gorges de Péreille" in sNameTmp:          lElevation = 200
+                elif "Montagne de Chevran" in sNameTmp:         lElevation = 200
+                elif "Côte de la Baume" in sNameTmp:            lElevation = 150
+                elif "Col Ratti" in sNameTmp:                   lElevation = 150
+                elif "Roselières du Léman" in sNameTmp:         lElevation = 300
+                else:
+                    sWarning = " - (/!\Warning - Default ceiling affected)"
+                    lElevation = 300
+                    return False                                    #BPascal le 27/09/2023 - Sortie volontaire sans prise en compte de cette zone qui n'est pas décrit avec une altitude altitude
+
             sAlt:str = str(lElevation) + "m/sol"                    #BPascal - 984 pieds = 300 mètres de plafond par défaut
             sFeet:str = str(int(lElevation / 0.3048) + 1)           #Conversion des mètres en pieds
 
@@ -228,6 +249,7 @@ class GeoBiodivSports:
                 sDesc += sTmp
             if aFeat["properties"]["info_url"]:
                 sDesc += " - (Source) " + aFeat["properties"].get("info_url","")
+            sDesc += sWarning
             aPoints.append(sDesc)
 
             #Détermination des périodes d'activités
@@ -268,7 +290,7 @@ class GeoBiodivSports:
 
             return True
 
-
+        # Début de traitement
         aKmlPolygon:list = None
         aPoints:list = []
         if sFile:
@@ -294,7 +316,6 @@ class GeoBiodivSports:
                         if makeOpenairHead(aFeat)==True:
                             coord2Openair(aSubFeat[0])
                             aPoints.append("")
-
         else:
             #use this bloc with convert kml content --> <coordinates>6.83116684293515,45.1887962663991 6.83122924345731,45.18753 ...
             aKmlPolygon = [[6.83116684293515,45.1887962663991],[6.83122924345731,45.1875332872193],[6.83131352292729,45.1869840167388],[6.83071009330213,45.1864871164329],[6.83053717594824,45.185745380592],[6.82986247584278,45.1853947065231],[6.82922047700472,45.1849278799351],[6.82886365843867,45.1838761316866],[6.82823613193378,45.1830008963238],[6.82738597032615,45.1824890057639],[6.82666879567534,45.1821110152744],[6.82591106478646,45.1817344113565],[6.82539673823843,45.1813494568795],[6.82497534886682,45.1811338530004],[6.82403054464708,45.1809937028924],[6.82167915632423,45.1808972808342],[6.82089792813593,45.1811401743407],[6.82015128427647,45.1807527705459],[6.81934193996408,45.1808092377071],[6.81751060505921,45.1807856490084],[6.81637477118819,45.1808245096688],[6.81555561350889,45.1807375032247],[6.81469981545173,45.1807092563641],[6.81384009663329,45.1806236243942],[6.81305955083956,45.1805065236058],[6.81195056611447,45.1803431277669],[6.81155863058669,45.1805578128995],[6.81217358554118,45.1812269518724],[6.81274406825428,45.1818400953196],[6.81339373640988,45.1824217734848],[6.81413728826758,45.1833971857846],[6.81410678564142,45.1845253672372],[6.81363626247196,45.1853753849769],[6.8137723066816,45.1861759122728],[6.81401106724276,45.187289248416],[6.81481792630372,45.1887812957156],[6.81673844619317,45.1902065883934],[6.81637589671788,45.1908516302397],[6.8163686858995,45.191340735987],[6.81638895016227,45.1922314920441],[6.81658461008764,45.1927136593541],[6.81731559390163,45.1932925405767],[6.81829986044738,45.1940065335207],[6.82060093655784,45.1955381375083],[6.8210990556066,45.1968726393021],[6.82179615753086,45.1981428127009],[6.8220253009274,45.1991126883914],[6.82225445228593,45.2000825638198],[6.82243516775035,45.2009390718592],[6.82379987264115,45.2012661577135],[6.82493808449342,45.2012559105484],[6.82619606839583,45.2012127889121],[6.82768374997701,45.2009604784701],[6.82884678081721,45.2007192863933],[6.82985733243216,45.2006270982441],[6.83084109295987,45.2007371176208],[6.83170114758968,45.2008226190614],[6.83245836340438,45.2005953211373],[6.83266751462437,45.1994953815465],[6.83264698799016,45.1986046270297],[6.83245116869721,45.1981224872431],[6.83217616892014,45.197671823096],[6.83211391273564,45.1973576368303],[6.83302435073977,45.1975851799175],[6.83277218586644,45.1968749221773],[6.83220330038046,45.1962905680771],[6.8320094637158,45.1958371168124],[6.83201456742522,45.1953193205273],[6.83135470366751,45.1945943037634],[6.83121247624648,45.1937077292448],[6.83125225068899,45.1931024730144],[6.83093985492477,45.1921067144735],[6.8308709061197,45.1911025978779],[6.83094534475593,45.1904098820422],[6.83127503175966,45.1898809421748],[6.83148102830672,45.1893274919413],[6.83116684293515,45.1887962663991]]
@@ -313,7 +334,9 @@ class GeoBiodivSports:
 
 if __name__ == '__main__':
     o = GeoBiodivSports()
-    o.geoJsonBiodivSports2Openair(["2022","2023"], "D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/LPO_Biodiv/Biodiv-sports-api/", "20230902_biodiv-sports-fr.geojson")
+    o.geoJsonBiodivSports2Openair(["2017","2018","2019","2020","2021","2022","2023","2024","2025"],
+                                "D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/LPO_Biodiv/Biodiv-sports-api/",
+                                "20230926_biodiv-sports-fr_allperiod.geojson")
 
 ###     Procédure de récupération des Parcs & ZSMs
 ###     a/ Utiliser l'API pour récupérer l'ensemble des tracés de type "Aérien"
