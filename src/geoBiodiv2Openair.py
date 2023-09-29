@@ -245,6 +245,7 @@ class GeoBiodivSports:
                 soup = BeautifulSoup(str(aFeat["properties"].get("description","")), features="lxml")  #from_encoding='utf-8'
                 sTmp:str = str(soup.get_text()).replace("\t"," ")
                 sTmp = sTmp.replace("\n"," ")
+                sTmp = sTmp.replace("\r"," ")
                 sTmp = sTmp.replace("  "," ")
                 sDesc += sTmp
             if aFeat["properties"]["info_url"]:
@@ -336,7 +337,7 @@ if __name__ == '__main__':
     o = GeoBiodivSports()
     o.geoJsonBiodivSports2Openair(["2017","2018","2019","2020","2021","2022","2023","2024","2025"],
                                 "D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/LPO_Biodiv/Biodiv-sports-api/",
-                                "20230926_biodiv-sports-fr_allperiod.geojson")
+                                "20230926_biodiv-sports-fr_allper.geojson")
 
 ###     Procédure de récupération des Parcs & ZSMs
 ###     a/ Utiliser l'API pour récupérer l'ensemble des tracés de type "Aérien"

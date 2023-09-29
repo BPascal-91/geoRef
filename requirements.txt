@@ -1,8 +1,9 @@
 ###
-### Librayries
-###    Syntaxe4load --> pip install -r requirements.txt
+### Syntaxe4load: 	pip install -r requirements.txt
+### Libraries:		https://pypi.org/
+### Documentation: 	https://python.doctor/page-pip-installer-librairies-automatiquement
 ###
 #aixmPaser							; necessary to parse sources files
-unidecode
+unidecode==1.2.0
 beautifulsoup4==4.8.0
 
