@@ -7,6 +7,7 @@ except ImportError:
     ### Include local modules/librairies  ##
     import os
     import sys
+    from time import gmtime, strftime
     aixmParserLocalSrc  = "../../aixmParser/src/"
     module_dir = os.path.dirname(__file__)
     sys.path.append(os.path.join(module_dir, aixmParserLocalSrc))
@@ -50,7 +51,7 @@ class GeoAreaTools:
         #   Enregistrer le fichier sous format type 'YYYYMMDD_LPO_All_Parcs-et-ZSMs.geojson'
         sPath:str="D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/ZSMs/"
         sFileSrc:str="20220415_LPO_All_Parcs-et-ZSMs.geojson"
-        sYersFilter=["2021","2022"]
+        #sYersFilter=["2021","2022"]
         oLPOdata:dict = bpaTools.readJsonFile(sPath + sFileSrc)
         aNewFeatParc:list = []
         aNewFeatActZsm:list = []
@@ -61,7 +62,7 @@ class GeoAreaTools:
             sName = oProps["name"]
             aPractices = oProps["practices"]                            # https://biodiv-sports.fr/api/v2/sportpractice/ --> practices parameter --> 1=Terrestre; 2=Vertical; 3=Aerien; 4=?, 5=Aquatique; 6=Souterrain; 7=Oiseaux?
             #sCreaDT = oProps["create_datetime"]                        # "2021-03-26T10:55:53.379470+01:00"
-            sUpdtDT = oProps["update_datetime"]                         # "2022-03-22T10:59:54.076878+01:00"
+            #sUpdtDT = oProps["update_datetime"]                         # "2022-03-22T10:59:54.076878+01:00"
             sStruct = oProps["structure"]
 
             bZSM:bool = False
@@ -143,7 +144,8 @@ class GeoAreaTools:
             aPoints.append("AN PROTECT " + aFeat["properties"].get("NOM_SITE","") + " " + sID + " (???m/sol) (FAUNA)")
             aPoints.append("*AUID GUId=! UId=! Id=" + sID)
             if "URL_FICHE" in aFeat["properties"]:
-                aPoints.append("*ADescr (c) Pascal Bazile 03/2023 - " + aFeat["properties"].get("OPERATEUR","") + " - " + aFeat["properties"].get("GEST_SITE","") + " - " + aFeat["properties"].get("ID_MNHN","") + " - " + aFeat["properties"]["URL_FICHE"])
+                sDesc:str = "*ADescr [Pascal Bazile (c) " + strftime("%m/%Y", gmtime())
+                aPoints.append(sDesc + " - " + aFeat["properties"].get("OPERATEUR","") + " - " + aFeat["properties"].get("GEST_SITE","") + " - " + aFeat["properties"].get("ID_MNHN","") + " - " + aFeat["properties"]["URL_FICHE"])
                 aPoints.append("*AActiv [H24] Survol interdit à moins de ??? mètres sol - (Décret)")
                 aPoints.append('*ATimes {"1": ["UTC(01/01->31/12)", "ANY(00:00->23:59)"]}')
             else:
@@ -185,6 +187,7 @@ class GeoAreaTools:
         if sFile:
             sFileDst = sFile.replace(".geojson", ".txt")
             bpaTools.writeTextFile(sPath + sFileDst, "\n".join(aPoints))
+            print(sPath + sFileDst);
         else:
             print("--Deb--")
             print("\n".join(aPoints))
@@ -308,4 +311,4 @@ if __name__ == '__main__':
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src\GitHub/poaff/input/Parcs/", "20220501_BPa-ZSMs-A-Integrer.geojson")
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src\GitHub/poaff/input/Parcs/Biotopes-FR3800749/", "20230330_ArreteProtectionBiotope_hr.geojson")
     #o.geoJson2Openair1("D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/FFVL/PWC-FrenchAlps/20230417_PWC-FrenchAlps-1/", "20230419_Parc-Carlaveyron_new.geojson")
-    o.geoJson2Openair1("D:\_Users_\BPascal\_4_Src\GitHub\poaff\input\INNPM/", "20220421_pn_Métropole_tmp.geojson")
+    o.geoJson2Openair1("D:\_Users_\BPascal\_4_Src\GitHub\poaff\input\INNPM/", "20231002_FR3801101_Castel-Vendon.geojson")

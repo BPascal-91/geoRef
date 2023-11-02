@@ -5,5 +5,5 @@
 ###
 #aixmPaser							; necessary to parse sources files
 unidecode==1.2.0
-beautifulsoup4==4.8.0
+beautifulsoup4==4.12.2
 
