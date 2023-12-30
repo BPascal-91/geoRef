@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#from shapely.geometry import Polygon
 
 try:
     import bpaTools
@@ -19,7 +18,8 @@ class GeoBiodivSports:
 
     def __init__(self)-> None:
         self.appPath = bpaTools.getFilePath(__file__)
-        self.inputPath = self.appPath + "../input/tests/"
+        #self.inputPath = self.appPath + "../input/_geoRef/"
+        #self.appVersion = bpaTools.getVersionFile()                 #or your app version
 
     def geoJsonBiodivSports2Openair(self, sYersFilter:list, sPath:str="", sFileSrc:str="") -> None:
         #Procédure: 	https://biodiv-sports.fr/api/v2/
@@ -142,29 +142,7 @@ class GeoBiodivSports:
             aFilter.append("Coeur du Parc national des Pyrénées")
             aFilter.append("La Caume")
 
-            if str(aFeat["properties"].get("name","")) in aFilter:
-                return False
-
-            aPoints.append("AC " + sClassType)
-
-            sType:str=""
-            sExt:str = ""
-            sName:str = "AN "
-            if sClassType == "ZSM":
-                sType = "PROTECT"
-                sExt = " (BIRD)"
-                sName += sType
-            elif sClassType == "GP":
-                sType = "PROTECT"
-                sExt = " (FAUNA)"
-                sName += sType
-            elif sClassType == "P":
-                sName += sClassType
-
-            if sType!="":
-                aPoints.append("AY " + sType)
-
-            ### Properties: {
+            ### source Biodiv-sport --> Properties: {
             ###     'contact': 'LPO BFC - DT Sa&ocirc;ne-et-Loire<br />Mail : saone-et-loire@lpo.fr<br />Tel : 03 85 48 77 70<br />Site : <a href="https://bfc.lpo.fr/">https://bfc.lpo.fr/<br /><img src="https://bourgogne-franche-comte.lpo.fr/wp-content/uploads/2023/01/cropped-LPO-BFC-logo-signature-droite.png" alt="" width="200" height="83" /></a>',
             ###     'create_datetime': '2023-01-17T14:46:15.131484+01:00',
             ###     'description': "FR3800975 &ndash; Basse Vall&eacute;e du Doubs<br />Esp&egrave;ces concern&eacute;es : Sterne pierregarin, &OElig;dicn&egrave;me criard, Petit gravelot, Gu&ecirc;pier d&rsquo;Europe, Hirondelle de rivage, Gorgebleue &agrave; miroir, Bruant proyer, Chev&ecirc;che d&rsquo;Ath&eacute;na, Courlis cendr&eacute;, Huppe fasci&eacute;e, Pie-gri&egrave;che &eacute;corcheur, Tarier des pr&eacute;s, Castor d&rsquo;Europe, L&eacute;zard des souches, Cuivr&eacute; des marais, Gratiole officinale.<br /><br />Afin de garantir l'&eacute;quilibre biologique des milieux n&eacute;cessaires &agrave; la reproduction, l'alimentation, le repos et la survie de l'esp&egrave;ce concern&eacute;e, il est instaur&eacute; un arr&ecirc;t&eacute; pr&eacute;fectoral de protection de biotope sur la Basse Vall&eacute;e du Doubs.<br /><br />Dans ce p&eacute;rim&egrave;tre, est interdit pendant la p&eacute;riode de reproduction (du 01/03 au 31/07) :<br /><br />&nbsp; &nbsp;- Le survol &agrave; moins de 150 m du sol part tout a&eacute;ronef, y compris engins volant t&eacute;l&eacute;guid&eacute;<br />&nbsp; &nbsp;- L&rsquo;accostage d&rsquo;engins nautique et le d&eacute;barquement<br />&nbsp; &nbsp;- La divagation des chiens<br />&nbsp; &nbsp;- La circulation &agrave; pied<br /><br />Merci d'&eacute;viter le secteur pour permettre la reproduction de l'esp&egrave;ce.",
@@ -180,6 +158,9 @@ class GeoBiodivSports:
             ###     'structure': 'LPO',
             ###     'update_datetime': '2023-03-08T21:53:33.895056+01:00',
             ###     'url': 'https://biodiv-sports.fr/api/v2/sensitivearea/1506/?format=geojson'}
+
+            if str(aFeat["properties"].get("name","")) in aFilter:
+                return False
 
             sNameTmp:str = aFeat["properties"].get("name","")
             sWarning:str = ""
@@ -216,6 +197,25 @@ class GeoBiodivSports:
                     lElevation = 300
                     return False                                    #BPascal le 27/09/2023 - Sortie volontaire sans prise en compte de cette zone qui n'est pas décrit avec une altitude altitude
 
+            aPoints.append("AC " + sClassType)
+
+            sType:str=""
+            sExt:str = ""
+            sName:str = "AN "
+            if sClassType == "ZSM":
+                sType = "PROTECT"
+                sExt = " (BIRD)"
+                sName += sType
+            elif sClassType == "GP":
+                sType = "PROTECT"
+                sExt = " (FAUNA)"
+                sName += sType
+            elif sClassType == "P":
+                sName += sClassType
+
+            if sType!="":
+                aPoints.append("AY " + sType)
+
             sAlt:str = str(lElevation) + "m/sol"                    #BPascal - 984 pieds = 300 mètres de plafond par défaut
             sFeet:str = str(int(lElevation / 0.3048) + 1)           #Conversion des mètres en pieds
 
@@ -242,7 +242,8 @@ class GeoBiodivSports:
                 #sDesc = sDesc.replace("<br/>","")
                 #sDesc = sDesc.replace("<strong>","")
                 #sDesc = sDesc.replace("</strong>","")
-                soup = BeautifulSoup(str(aFeat["properties"].get("description","")), features="lxml")  #from_encoding='utf-8'
+                sTmpDesc:str = "<a>" + str(aFeat["properties"].get("description","")) + "</a>"
+                soup = BeautifulSoup(sTmpDesc, features="lxml")  #from_encoding='utf-8'
                 sTmp:str = str(soup.get_text()).replace("\t"," ")
                 sTmp = sTmp.replace("\n"," ")
                 sTmp = sTmp.replace("\r"," ")
@@ -325,6 +326,7 @@ class GeoBiodivSports:
         if sFile:
             sFileDst = sFile.replace(".geojson", ".txt")
             bpaTools.writeTextFile(sPath + sFileDst, "\n".join(aPoints))
+            print("\nFile created -> " + sPath + sFileDst)
         else:
             print("--Deb--")
             print("\n".join(aPoints))
@@ -335,9 +337,10 @@ class GeoBiodivSports:
 
 if __name__ == '__main__':
     o = GeoBiodivSports()
-    o.geoJsonBiodivSports2Openair(["2017","2018","2019","2020","2021","2022","2023","2024","2025"],
+    #                        OLD = "2017","2018","2019","2020","2021","2022","2023","2024","2025"
+    o.geoJsonBiodivSports2Openair(["2022","2023","2024","2025"],
                                 "D:/_Users_/BPascal/_4_Src/GitHub/poaff/input/LPO_Biodiv/Biodiv-sports-api/",
-                                "20231031_biodiv-sports-fr_nov.geojson")
+                                "20240101_biodiv-sports-fr_janv.geojson")
 
 ###     Procédure de récupération des Parcs & ZSMs
 ###     a/ Utiliser l'API pour récupérer l'ensemble des tracés de type "Aérien"
